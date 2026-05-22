@@ -32,13 +32,13 @@ export async function api(path, opts) {
 export const state = { plan: 'api', pricing: null };
 
 const ROUTES = {
-  '/overview': () => import('/web/routes/overview.js'),
-  '/prompts':  () => import('/web/routes/prompts.js'),
-  '/sessions': () => import('/web/routes/sessions.js'),
-  '/projects': () => import('/web/routes/projects.js'),
-  '/skills':   () => import('/web/routes/skills.js'),
-  '/tips':     () => import('/web/routes/tips.js'),
-  '/settings': () => import('/web/routes/settings.js'),
+  '/overview': { label: 'visão geral', load: () => import('/web/routes/overview.js') },
+  '/prompts':  { label: 'prompts',     load: () => import('/web/routes/prompts.js') },
+  '/sessions': { label: 'sessões',     load: () => import('/web/routes/sessions.js') },
+  '/projects': { label: 'projetos',    load: () => import('/web/routes/projects.js') },
+  '/skills':   { label: 'skills',      load: () => import('/web/routes/skills.js') },
+  '/tips':     { label: 'dicas',       load: () => import('/web/routes/tips.js') },
+  '/settings': { label: 'configurações', load: () => import('/web/routes/settings.js') },
 };
 
 function buildTopbar() {
@@ -47,11 +47,11 @@ function buildTopbar() {
   wrap.innerHTML = `
     <div class="brand">Token Dashboard</div>
     <nav>
-      ${Object.keys(ROUTES).map(p => `<a href="#${p}" data-route="${p}">${p.slice(1)}</a>`).join('')}
+      ${Object.entries(ROUTES).map(([p, r]) => `<a href="#${p}" data-route="${p}">${r.label}</a>`).join('')}
     </nav>
     <div class="spacer"></div>
     <span class="pill" id="plan-pill">api</span>
-    <span class="pill muted" title="Cmd/Ctrl+B blurs sensitive text">⌘B blur</span>
+    <span class="pill muted" title="Cmd/Ctrl+B borra textos sensíveis">⌘B borrar</span>
   `;
   document.body.prepend(wrap);
 }
@@ -66,13 +66,13 @@ async function render() {
   let key = path;
   if (path.startsWith('/sessions/')) key = '/sessions';
   setActiveTab(key);
-  const loader = ROUTES[key] || ROUTES['/overview'];
-  const mod = await loader();
+  const route = ROUTES[key] || ROUTES['/overview'];
+  const mod = await route.load();
   $('#app').innerHTML = '';
   try {
     await mod.default($('#app'));
   } catch (e) {
-    $('#app').innerHTML = `<div class="card"><h2>Error</h2><pre>${fmt.htmlSafe(String(e.stack || e))}</pre></div>`;
+    $('#app').innerHTML = `<div class="card"><h2>Erro</h2><pre>${fmt.htmlSafe(String(e.stack || e))}</pre></div>`;
   }
 }
 
@@ -83,14 +83,14 @@ async function firstRun() {
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
     <div class="modal">
-      <h2>Welcome — pick your plan</h2>
-      <p>This sets how costs are displayed. Change it later in Settings.</p>
+      <h2>Bem-vindo — escolha seu plano</h2>
+      <p>Isso define como os custos são exibidos. Você muda depois em Configurações.</p>
       <select id="firstplan" style="width:100%">
-        ${plans.map(([k,v]) => `<option value="${k}">${v.label}${v.monthly ? ` — $${v.monthly}/mo` : ''}</option>`).join('')}
+        ${plans.map(([k,v]) => `<option value="${k}">${v.label}${v.monthly ? ` — $${v.monthly}/mês` : ''}</option>`).join('')}
       </select>
       <div class="actions">
         <div class="spacer"></div>
-        <button class="primary" id="firstsave">Continue</button>
+        <button class="primary" id="firstsave">Continuar</button>
       </div>
     </div>`;
   document.body.appendChild(overlay);

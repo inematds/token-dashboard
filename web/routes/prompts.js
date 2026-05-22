@@ -1,8 +1,8 @@
 import { api, fmt } from '/web/app.js';
 
 const SORTS = [
-  { key: 'tokens', label: 'Most tokens' },
-  { key: 'recent', label: 'Most recent' },
+  { key: 'tokens', label: 'Mais tokens' },
+  { key: 'recent', label: 'Mais recentes' },
 ];
 
 function readSort() {
@@ -27,8 +27,8 @@ export default async function (root) {
     </div>`;
 
   const subtitle = sort.key === 'recent'
-    ? 'Your latest prompts and the assistant turn each one triggered. Click a row to see the full prompt.'
-    : 'The prompts that cost the most tokens. Click a row to see the full prompt.';
+    ? 'Seus prompts mais recentes e o turno do assistente que cada um disparou. Clique numa linha para ver o prompt completo.'
+    : 'Os prompts que custaram mais tokens. Clique numa linha para ver o prompt completo.';
 
   root.innerHTML = `
     <div class="flex" style="margin-bottom:14px">
@@ -41,12 +41,12 @@ export default async function (root) {
       <p class="muted" style="margin:0 0 14px">${subtitle}</p>
       <table id="prompts">
         <thead><tr>
-          <th>${sort.key === 'recent' ? 'when' : 'cache cost'}</th>
+          <th>${sort.key === 'recent' ? 'quando' : 'custo cache'}</th>
           <th>prompt</th>
-          <th>model</th>
+          <th>modelo</th>
           <th class="num">tokens</th>
-          <th class="num">cache rd</th>
-          <th>session</th>
+          <th class="num">cache ld</th>
+          <th>sessão</th>
         </tr></thead>
         <tbody>
           ${rows.map((r,i) => `
@@ -57,7 +57,7 @@ export default async function (root) {
               <td class="num">${fmt.int(r.billable_tokens)}</td>
               <td class="num">${fmt.int(r.cache_read_tokens)}</td>
               <td><a href="#/sessions/${encodeURIComponent(r.session_id)}" class="mono" onclick="event.stopPropagation()">${fmt.htmlSafe(r.session_id.slice(0,8))}…</a></td>
-            </tr>`).join('') || '<tr><td colspan="6" class="muted">no prompts yet</td></tr>'}
+            </tr>`).join('') || '<tr><td colspan="6" class="muted">nenhum prompt ainda</td></tr>'}
         </tbody>
       </table>
     </div>
@@ -75,16 +75,16 @@ export default async function (root) {
       drawer.innerHTML = `
         <div class="card">
           <h3 style="display:flex;align-items:center">
-            <span>Prompt detail</span>
+            <span>Detalhe do prompt</span>
             <span class="spacer"></span>
             <span class="badge ${fmt.modelClass(r.model)}">${fmt.htmlSafe(fmt.modelShort(r.model))}</span>
           </h3>
           <pre class="blur-sensitive">${fmt.htmlSafe(r.prompt_text || '')}</pre>
           <div class="flex" style="margin-top:12px;flex-wrap:wrap;gap:14px">
             <span class="muted">${fmt.ts(r.timestamp)}</span>
-            <span class="muted">${fmt.int(r.billable_tokens)} billable · ${fmt.int(r.cache_read_tokens)} cache rd · ~${fmt.usd4(r.estimated_cost_usd)} cache cost</span>
+            <span class="muted">${fmt.int(r.billable_tokens)} faturáveis · ${fmt.int(r.cache_read_tokens)} cache ld · ~${fmt.usd4(r.estimated_cost_usd)} custo cache</span>
             <span class="spacer"></span>
-            <a href="#/sessions/${encodeURIComponent(r.session_id)}">Open session →</a>
+            <a href="#/sessions/${encodeURIComponent(r.session_id)}">Abrir sessão →</a>
           </div>
         </div>`;
       drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

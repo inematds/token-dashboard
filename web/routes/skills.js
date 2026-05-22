@@ -5,7 +5,7 @@ const RANGES = [
   { key: '7d',  label: '7d',  days: 7 },
   { key: '30d', label: '30d', days: 30 },
   { key: '90d', label: '90d', days: 90 },
-  { key: 'all', label: 'All', days: null },
+  { key: 'all', label: 'Tudo', days: null },
 ];
 
 function readRange() {
@@ -32,7 +32,6 @@ export default async function (root) {
   const skills = await api(url);
 
   const totalInvocations = skills.reduce((s, r) => s + r.invocations, 0);
-  const totalSessions = new Set(); // not exact — we'd need another query; skip.
 
   const rangeTabs = `
     <div class="range-tabs" role="tablist">
@@ -42,31 +41,31 @@ export default async function (root) {
   root.innerHTML = `
     <div class="flex" style="margin-bottom:14px">
       <h2 style="margin:0;font-size:16px;letter-spacing:-0.01em">Skills</h2>
-      <span class="muted" style="font-size:12px">${range.days ? `last ${range.days} days` : 'all time'}</span>
+      <span class="muted" style="font-size:12px">${range.days ? `últimos ${range.days} dias` : 'todo o período'}</span>
       <div class="spacer"></div>
       ${rangeTabs}
     </div>
 
     <div class="row cols-2">
-      <div class="card kpi"><div class="label">Unique skills used</div><div class="value">${fmt.int(skills.length)}</div></div>
-      <div class="card kpi"><div class="label">Total invocations</div><div class="value">${fmt.int(totalInvocations)}</div></div>
+      <div class="card kpi"><div class="label">Skills únicas usadas</div><div class="value">${fmt.int(skills.length)}</div></div>
+      <div class="card kpi"><div class="label">Total de invocações</div><div class="value">${fmt.int(totalInvocations)}</div></div>
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3>Top skills (by invocations)</h3>
+      <h3>Top de skills (por invocações)</h3>
       <div id="ch-skills" style="height:320px"></div>
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3>All skills</h3>
-      <p class="muted" style="margin:-4px 0 14px;font-size:12px">"Tokens per call" is the size of the skill's <code>SKILL.md</code> file — what Claude Code loads into context each time the skill is invoked.</p>
+      <h3>Todas as skills</h3>
+      <p class="muted" style="margin:-4px 0 14px;font-size:12px">"Tokens por chamada" é o tamanho do <code>SKILL.md</code> da skill — o que o Claude Code carrega no contexto cada vez que a skill é invocada.</p>
       <table>
         <thead><tr>
           <th>skill</th>
-          <th class="num">invocations</th>
-          <th class="num">tokens per call</th>
-          <th class="num">sessions</th>
-          <th>last used</th>
+          <th class="num">invocações</th>
+          <th class="num">tokens por chamada</th>
+          <th class="num">sessões</th>
+          <th>último uso</th>
         </tr></thead>
         <tbody>
           ${skills.map(s => `
@@ -76,7 +75,7 @@ export default async function (root) {
               <td class="num">${s.tokens_per_call == null ? '<span class="muted">—</span>' : fmt.int(s.tokens_per_call)}</td>
               <td class="num">${fmt.int(s.sessions)}</td>
               <td class="mono">${fmt.ts(s.last_used)}</td>
-            </tr>`).join('') || '<tr><td colspan="5" class="muted">no skills invoked in this range</td></tr>'}
+            </tr>`).join('') || '<tr><td colspan="5" class="muted">nenhuma skill invocada neste período</td></tr>'}
         </tbody>
       </table>
     </div>

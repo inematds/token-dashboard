@@ -10,9 +10,9 @@ async function renderList(root) {
   const list = await api('/api/sessions?limit=100');
   root.innerHTML = `
     <div class="card">
-      <h2>Sessions</h2>
+      <h2>Sessões</h2>
       <table>
-        <thead><tr><th>started</th><th>project</th><th class="num">turns</th><th class="num">tokens</th><th>session</th></tr></thead>
+        <thead><tr><th>início</th><th>projeto</th><th class="num">turnos</th><th class="num">tokens</th><th>sessão</th></tr></thead>
         <tbody>
           ${list.map(s => `
             <tr>
@@ -49,22 +49,22 @@ async function renderSession(root, id) {
   root.innerHTML = `
     <div class="card">
       <h2 style="display:flex;align-items:center">
-        <span>Session ${fmt.htmlSafe(id.slice(0,8))}…</span>
+        <span>Sessão ${fmt.htmlSafe(id.slice(0,8))}…</span>
         <span class="spacer"></span>
-        <a href="#/sessions" class="muted">← all sessions</a>
+        <a href="#/sessions" class="muted">← todas as sessões</a>
       </h2>
       <div class="flex muted" style="font-family:var(--mono);font-size:12px;flex-wrap:wrap;gap:14px">
         <span>${fmt.htmlSafe(project)}</span>
         <span>${fmt.ts(started)} → ${fmt.ts(ended)}</span>
-        <span>${turns.length} records</span>
-        <span>${fmt.int(totalIn)} in · ${fmt.int(totalOut)} out · ${fmt.int(totalCacheRd)} cache rd</span>
+        <span>${turns.length} registros</span>
+        <span>${fmt.int(totalIn)} ent · ${fmt.int(totalOut)} saí · ${fmt.int(totalCacheRd)} cache ld</span>
       </div>
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3>Turn-by-turn</h3>
+      <h3>Turno a turno</h3>
       <table>
-        <thead><tr><th>time</th><th>type</th><th>model</th><th class="blur-sensitive">prompt / tools</th><th class="num">in</th><th class="num">out</th><th class="num">cache rd</th></tr></thead>
+        <thead><tr><th>hora</th><th>tipo</th><th>modelo</th><th class="blur-sensitive">prompt / ferramentas</th><th class="num">ent</th><th class="num">saí</th><th class="num">cache ld</th></tr></thead>
         <tbody>
           ${turns.map(t => {
             const tools = t.tool_calls_json ? JSON.parse(t.tool_calls_json) : [];

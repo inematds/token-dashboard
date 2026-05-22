@@ -4,6 +4,7 @@ from __future__ import annotations
 import http.server
 import json
 import mimetypes
+import os
 import queue
 import threading
 import time
@@ -190,7 +191,7 @@ def build_handler(db_path: str, projects_dir: str):
     return H
 
 
-def _scan_loop(db_path: str, projects_dir: str, interval: float = 30.0):
+def _scan_loop(db_path: str, projects_dir: str, interval: float = 120.0):
     while True:
         try:
             n = scan_dir(projects_dir, db_path)
@@ -202,7 +203,8 @@ def _scan_loop(db_path: str, projects_dir: str, interval: float = 30.0):
 
 
 def run(host: str, port: int, db_path: str, projects_dir: str):
-    threading.Thread(target=_scan_loop, args=(db_path, projects_dir), daemon=True).start()
+    interval = float(os.environ.get("TOKEN_DASHBOARD_SCAN_INTERVAL", "120"))
+    threading.Thread(target=_scan_loop, args=(db_path, projects_dir, interval), daemon=True).start()
     H = build_handler(db_path, projects_dir)
     httpd = http.server.ThreadingHTTPServer((host, port), H)
     httpd.serve_forever()

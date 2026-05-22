@@ -5,23 +5,23 @@ export default async function (root) {
   const plans = Object.entries(cur.pricing.plans);
   root.innerHTML = `
     <div class="card">
-      <h2>Settings</h2>
-      <h3 style="margin-top:16px">Plan</h3>
-      <p class="muted" style="margin:0 0 12px">Sets how cost is displayed. API mode shows pay-per-token rates. Subscription modes show what you actually pay each month.</p>
+      <h2>Configurações</h2>
+      <h3 style="margin-top:16px">Plano</h3>
+      <p class="muted" style="margin:0 0 12px">Define como o custo é exibido. Modo API mostra taxas pay-per-token. Modos de assinatura mostram o que você paga por mês de fato.</p>
       <div class="flex">
         <select id="plan">
-          ${plans.map(([k,v]) => `<option value="${k}" ${k===cur.plan?'selected':''}>${v.label}${v.monthly?` — $${v.monthly}/mo`:''}</option>`).join('')}
+          ${plans.map(([k,v]) => `<option value="${k}" ${k===cur.plan?'selected':''}>${v.label}${v.monthly?` — $${v.monthly}/mês`:''}</option>`).join('')}
         </select>
-        <button class="primary" id="save">Save</button>
+        <button class="primary" id="save">Salvar</button>
         <span id="msg" class="muted"></span>
       </div>
 
       <hr class="divider">
 
-      <h3>Pricing table</h3>
-      <p class="muted" style="margin:0 0 12px">Edit <code>pricing.json</code> in the project root to change rates. Reload the page after editing.</p>
+      <h3>Tabela de preços</h3>
+      <p class="muted" style="margin:0 0 12px">Edite <code>pricing.json</code> na raiz do projeto para mudar as taxas. Recarregue a página depois.</p>
       <table>
-        <thead><tr><th>model</th><th class="num">input</th><th class="num">output</th><th class="num">cache read</th><th class="num">cache 5m</th><th class="num">cache 1h</th></tr></thead>
+        <thead><tr><th>modelo</th><th class="num">entrada</th><th class="num">saída</th><th class="num">cache lido</th><th class="num">cache 5m</th><th class="num">cache 1h</th></tr></thead>
         <tbody>
           ${Object.entries(cur.pricing.models).map(([k,v]) => `
             <tr><td><span class="badge ${v.tier}">${k}</span></td>
@@ -33,12 +33,12 @@ export default async function (root) {
             </tr>`).join('')}
         </tbody>
       </table>
-      <p class="muted" style="margin-top:8px;font-size:11px">Rates per 1M tokens, USD.</p>
+      <p class="muted" style="margin-top:8px;font-size:11px">Taxas por 1M de tokens, em USD.</p>
 
       <hr class="divider">
 
-      <h3>Privacy</h3>
-      <p class="muted">Press <code>Cmd/Ctrl + B</code> anywhere to blur prompt text and other sensitive content for screenshots.</p>
+      <h3>Privacidade</h3>
+      <p class="muted">Aperte <code>Cmd/Ctrl + B</code> em qualquer tela para borrar texto de prompts e outros conteúdos sensíveis para screenshots.</p>
     </div>`;
 
   $('#save').addEventListener('click', async () => {
@@ -46,7 +46,7 @@ export default async function (root) {
     await fetch('/api/plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan }) });
     state.plan = plan;
     document.getElementById('plan-pill').textContent = plan;
-    $('#msg').textContent = 'Saved.';
+    $('#msg').textContent = 'Salvo.';
     $('#msg').style.color = 'var(--good)';
   });
 }

@@ -58,8 +58,8 @@ def cache_discipline_tips(db_path, today_iso: Optional[str] = None) -> List[dict
                 out.append({
                     "key": key,
                     "category": "cache",
-                    "title": f"Low cache hit rate in {row['project_slug']}",
-                    "body": f"Cache hit rate is {hit*100:.0f}% over the last 7 days. Sessions that restart context frequently rebuild cache. Consider longer-lived sessions or fewer context resets.",
+                    "title": f"Taxa de cache hit baixa em {row['project_slug']}",
+                    "body": f"A taxa de cache hit é {hit*100:.0f}% nos últimos 7 dias. Sessões que reiniciam contexto com frequência reconstroem o cache. Considere sessões mais longas ou menos resets de contexto.",
                     "scope": row["project_slug"],
                 })
     return out
@@ -82,8 +82,8 @@ def repeated_target_tips(db_path, today_iso: Optional[str] = None) -> List[dict]
                 continue
             out.append({
                 "key": key, "category": "repeat-file",
-                "title": f"{row['target']} read {row['n']} times",
-                "body": f"This file was opened {row['n']} times across {row['sessions']} sessions in the past 7 days. A summary in CLAUDE.md or one read per session would avoid repeats.",
+                "title": f"{row['target']} lido {row['n']} vezes",
+                "body": f"Este arquivo foi aberto {row['n']} vezes em {row['sessions']} sessões nos últimos 7 dias. Um resumo no CLAUDE.md ou uma leitura por sessão evitaria as repetições.",
                 "scope": row["target"],
             })
         for row in c.execute("""
@@ -98,8 +98,8 @@ def repeated_target_tips(db_path, today_iso: Optional[str] = None) -> List[dict]
                 continue
             out.append({
                 "key": key, "category": "repeat-bash",
-                "title": f"`{row['target']}` ran {row['n']} times",
-                "body": f"This bash command ran {row['n']} times in the past 7 days. Consider a watch flag or shell alias.",
+                "title": f"`{row['target']}` rodou {row['n']} vezes",
+                "body": f"Este comando bash rodou {row['n']} vezes nos últimos 7 dias. Considere usar uma flag de watch ou um alias de shell.",
                 "scope": row["target"],
             })
     return out
@@ -131,8 +131,8 @@ def right_size_tips(db_path, today_iso: Optional[str] = None) -> List[dict]:
         return []
     return [{
         "key": key, "category": "right-size",
-        "title": f"{row['n']} short Opus turns might fit on Sonnet",
-        "body": f"Opus turns under 500 output tokens cost ~${api_opus:.2f} in the last 7 days. Sonnet would have cost ~${api_sonnet:.2f} (savings ~${savings:.2f}).",
+        "title": f"{row['n']} turnos curtos no Opus caberiam no Sonnet",
+        "body": f"Turnos do Opus com menos de 500 tokens de saída custaram ~${api_opus:.2f} nos últimos 7 dias. No Sonnet teriam custado ~${api_sonnet:.2f} (economia ~${savings:.2f}).",
         "scope": "opus-short-turns-7d",
     }]
 
@@ -152,8 +152,8 @@ def outlier_tips(db_path, today_iso: Optional[str] = None) -> List[dict]:
             if not _is_dismissed(db_path, key):
                 out.append({
                     "key": key, "category": "tool-bloat",
-                    "title": f"{big['n']} tool results over 50k tokens this week",
-                    "body": f"Average size is {int(big['avg_t']):,} tokens. Pipe long Bash output to head/tail and ask for narrower file reads.",
+                    "title": f"{big['n']} resultados de ferramenta acima de 50k tokens nesta semana",
+                    "body": f"Tamanho médio: {int(big['avg_t']):,} tokens. Mande saídas longas de Bash para head/tail e peça leituras de arquivo mais estreitas.",
                     "scope": "result-50k+",
                 })
         for row in c.execute("""
@@ -170,8 +170,8 @@ def outlier_tips(db_path, today_iso: Optional[str] = None) -> List[dict]:
                     continue
                 out.append({
                     "key": key, "category": "subagent-outlier",
-                    "title": f"Subagent {row['agent_id']} has cost outliers",
-                    "body": f"Largest invocation used {int(row['max_t']):,} tokens vs mean {int(row['mean_t']):,}. Worth checking what those did differently.",
+                    "title": f"Subagente {row['agent_id']} tem outliers de custo",
+                    "body": f"Maior invocação usou {int(row['max_t']):,} tokens vs média de {int(row['mean_t']):,}. Vale checar o que essas fizeram de diferente.",
                     "scope": row["agent_id"],
                 })
     return out
