@@ -39,6 +39,7 @@ const ROUTES = {
   '/skills':   { label: 'skills',      load: () => import('/web/routes/skills.js') },
   '/tips':     { label: 'dicas',       load: () => import('/web/routes/tips.js') },
   '/settings': { label: 'configurações', load: () => import('/web/routes/settings.js') },
+  '/help':     { label: 'ajuda',         load: () => import('/web/routes/help.js') },
 };
 
 function buildTopbar() {

@@ -27,8 +27,49 @@ PRICING_JSON = Path(__file__).resolve().parent.parent / "pricing.json"
 
 EVENTS: "queue.Queue[dict]" = queue.Queue()
 
+# Mutable runtime state — Settings tab can adjust live.
+RUNTIME = {"scan_interval": 120.0}
+
+CLAUDE_MEM_SETTINGS = Path.home() / ".claude-mem" / "settings.json"
+CLAUDE_MEM_KEYS = (
+    "CLAUDE_MEM_CONTEXT_OBSERVATIONS",
+    "CLAUDE_MEM_CONTEXT_SESSION_COUNT",
+    "CLAUDE_MEM_CONTEXT_SHOW_LAST_SUMMARY",
+)
+
 MAX_POST_BYTES = 1_000_000  # 1 MB — we only accept tiny JSON bodies (plan, tip key)
 MAX_LIMIT = 1000
+
+
+def _read_claude_mem() -> dict:
+    if not CLAUDE_MEM_SETTINGS.exists():
+        return {"available": False}
+    try:
+        data = json.loads(CLAUDE_MEM_SETTINGS.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        return {"available": False, "error": str(e)}
+    return {
+        "available": True,
+        "context_observations": int(data.get("CLAUDE_MEM_CONTEXT_OBSERVATIONS", 0) or 0),
+        "context_session_count": int(data.get("CLAUDE_MEM_CONTEXT_SESSION_COUNT", 0) or 0),
+        "context_show_last_summary": str(data.get("CLAUDE_MEM_CONTEXT_SHOW_LAST_SUMMARY", "false")).lower() == "true",
+    }
+
+
+def _write_claude_mem(updates: dict) -> dict:
+    if not CLAUDE_MEM_SETTINGS.exists():
+        raise FileNotFoundError("claude-mem settings.json not found")
+    data = json.loads(CLAUDE_MEM_SETTINGS.read_text(encoding="utf-8"))
+    if "context_observations" in updates:
+        data["CLAUDE_MEM_CONTEXT_OBSERVATIONS"] = str(int(updates["context_observations"]))
+    if "context_session_count" in updates:
+        data["CLAUDE_MEM_CONTEXT_SESSION_COUNT"] = str(int(updates["context_session_count"]))
+    if "context_show_last_summary" in updates:
+        data["CLAUDE_MEM_CONTEXT_SHOW_LAST_SUMMARY"] = "true" if updates["context_show_last_summary"] else "false"
+    tmp = CLAUDE_MEM_SETTINGS.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(CLAUDE_MEM_SETTINGS)
+    return _read_claude_mem()
 
 
 def _send_json(handler, obj, status: int = 200) -> None:
@@ -145,6 +186,19 @@ def build_handler(db_path: str, projects_dir: str):
             if path == "/api/scan":
                 n = scan_dir(projects_dir, db_path)
                 return _send_json(self, n)
+            if path == "/api/settings":
+                db_size = os.path.getsize(db_path) if os.path.exists(db_path) else 0
+                return _send_json(self, {
+                    "scan_interval": RUNTIME["scan_interval"],
+                    "env": {
+                        "host": os.environ.get("HOST", "127.0.0.1"),
+                        "port": int(os.environ.get("PORT", "8080")),
+                        "projects_dir": projects_dir,
+                        "db_path": db_path,
+                        "db_size_bytes": db_size,
+                    },
+                    "claude_mem": _read_claude_mem(),
+                })
             if path == "/api/stream":
                 self.send_response(200)
                 self.send_header("Content-Type", "text/event-stream")
@@ -185,13 +239,43 @@ def build_handler(db_path: str, projects_dir: str):
             if url.path == "/api/tips/dismiss":
                 dismiss_tip(db_path, body.get("key", ""))
                 return _send_json(self, {"ok": True})
+            if url.path == "/api/settings/scan-interval":
+                try:
+                    iv = float(body.get("seconds", 120))
+                except (TypeError, ValueError):
+                    return _send_error(self, 400, "seconds must be a number")
+                if iv < 30 or iv > 3600:
+                    return _send_error(self, 400, "seconds must be between 30 and 3600")
+                RUNTIME["scan_interval"] = iv
+                return _send_json(self, {"ok": True, "scan_interval": iv})
+            if url.path == "/api/settings/claude-mem":
+                try:
+                    result = _write_claude_mem(body)
+                except FileNotFoundError as e:
+                    return _send_error(self, 404, str(e))
+                except (OSError, ValueError) as e:
+                    return _send_error(self, 400, str(e))
+                return _send_json(self, {"ok": True, "claude_mem": result})
+            if url.path == "/api/settings/rescan":
+                n = scan_dir(projects_dir, db_path)
+                return _send_json(self, {"ok": True, "scanned": n})
+            if url.path == "/api/settings/clear-cache":
+                if not body.get("confirm"):
+                    return _send_error(self, 400, "must pass confirm:true")
+                try:
+                    if os.path.exists(db_path):
+                        os.remove(db_path)
+                except OSError as e:
+                    return _send_error(self, 500, str(e))
+                n = scan_dir(projects_dir, db_path)
+                return _send_json(self, {"ok": True, "rescanned": n})
             self.send_response(404)
             self.end_headers()
 
     return H
 
 
-def _scan_loop(db_path: str, projects_dir: str, interval: float = 120.0):
+def _scan_loop(db_path: str, projects_dir: str):
     while True:
         try:
             n = scan_dir(projects_dir, db_path)
@@ -199,12 +283,12 @@ def _scan_loop(db_path: str, projects_dir: str, interval: float = 120.0):
                 EVENTS.put({"type": "scan", "n": n, "ts": time.time()})
         except Exception as e:
             EVENTS.put({"type": "error", "message": str(e)})
-        time.sleep(interval)
+        time.sleep(RUNTIME["scan_interval"])
 
 
 def run(host: str, port: int, db_path: str, projects_dir: str):
-    interval = float(os.environ.get("TOKEN_DASHBOARD_SCAN_INTERVAL", "120"))
-    threading.Thread(target=_scan_loop, args=(db_path, projects_dir, interval), daemon=True).start()
+    RUNTIME["scan_interval"] = float(os.environ.get("TOKEN_DASHBOARD_SCAN_INTERVAL", "120"))
+    threading.Thread(target=_scan_loop, args=(db_path, projects_dir), daemon=True).start()
     H = build_handler(db_path, projects_dir)
     httpd = http.server.ThreadingHTTPServer((host, port), H)
     httpd.serve_forever()
