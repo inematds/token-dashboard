@@ -129,6 +129,7 @@ Fluxo de dados: `cli.py` → `token_dashboard/scanner.py` → DB SQLite; `token_
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — como desenvolver e testar
 - [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md) — pontas soltas
 - [`docs/inspiration.md`](docs/inspiration.md) — trabalho anterior e como este projeto diverge
+- [`docs/claude-mem-tuning.md`](docs/claude-mem-tuning.md) — caso real de uso do dashboard para auditar e ajustar o plugin claude-mem
 
 ## Contribuindo
 
