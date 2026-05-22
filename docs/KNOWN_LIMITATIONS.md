@@ -1,29 +1,29 @@
-# Known Limitations
+# Limitações conhecidas
 
-None of these are blockers — the dashboard still gives you useful information. They're the rough edges you'll notice if you look hard.
+Nenhuma delas é bloqueador — o dashboard ainda te dá informação útil. São as pontas soltas que você nota se olhar com atenção.
 
-## Skills token counts are partial
+## Contagens de tokens de Skills são parciais
 
-The Skills route shows every skill Claude Code invoked, how many times, across how many sessions, and when. The **tokens-per-call** column is populated only for skills whose `SKILL.md` lives under `~/.claude/skills/`, `~/.claude/scheduled-tasks/`, or `~/.claude/plugins/`. Skills registered elsewhere (project-local `.claude/skills/`, or invocations that go through the `Task` tool with a skill-shaped `subagent_type`) show invocation counts but leave the token column blank.
+A rota Skills mostra cada skill que o Claude Code invocou, quantas vezes, em quantas sessões e quando. A coluna **tokens-per-call** é populada apenas para skills cujo `SKILL.md` está sob `~/.claude/skills/`, `~/.claude/scheduled-tasks/` ou `~/.claude/plugins/`. Skills registradas em outros lugares (`.claude/skills/` local do projeto, ou invocações que passam pela ferramenta `Task` com um `subagent_type` em formato de skill) mostram a contagem de invocações mas deixam a coluna de tokens em branco.
 
-It's still a useful view — you can see which skills dominate your session time — just don't expect a complete per-skill token cost. PRs to broaden the catalog scan welcome.
+Ainda é uma visão útil — você consegue ver quais skills dominam o tempo da sua sessão — só não espere um custo completo de tokens por skill. PRs para ampliar o scan do catálogo são bem-vindos.
 
-## Cost for Pro / Max / Max-20x users is shown as API-equivalent, not subscription value
+## Custo para usuários Pro / Max / Max-20x é mostrado como equivalente-API, não valor da assinatura
 
-The Settings route lets you select your pricing plan, but the Overview cost number is always the API-equivalent (what the same usage would have cost on pay-per-token rates). If you're on Pro you pay a flat $20/month regardless of how much of that API-equivalent number you rack up. We don't do "subscription ROI" math yet — Anthropic doesn't publish per-plan rate limits as public JSON, and faking it would be worse than not doing it.
+A rota Settings deixa você selecionar seu plano de pricing, mas o número de custo da Overview é sempre o equivalente em API (o que o mesmo uso teria custado em taxas pay-per-token). Se você está no Pro, paga $20/mês fixos independentemente do quanto desse número equivalente-API você acumule. Não fazemos a conta de "ROI da assinatura" ainda — a Anthropic não publica rate limits por plano em JSON público, e fingir seria pior do que não fazer.
 
-## Cowork sessions are invisible
+## Sessões Cowork são invisíveis
 
-If you use Claude's Cowork mode (server-side sessions, not local `claude` CLI), those sessions don't write JSONL to `~/.claude/projects/` and the dashboard can't see them.
+Se você usa o modo Cowork do Claude (sessões server-side, não a CLI `claude` local), essas sessões não escrevem JSONL em `~/.claude/projects/` e o dashboard não consegue vê-las.
 
-## Non-standard model names get tier-fallback pricing
+## Nomes de modelo não-padrão recebem pricing por fallback de tier
 
-If a transcript references a model ID not in `pricing.json` (e.g. a future snapshot that isn't in our table yet), cost is estimated from the tier substring (`opus` / `sonnet` / `haiku`) in the name. The UI marks these as `estimated: true`. If the model name contains none of those substrings, cost is reported as null.
+Se uma transcrição referencia um ID de modelo que não está em `pricing.json` (ex.: um snapshot futuro que ainda não está na nossa tabela), o custo é estimado a partir do substring de tier (`opus` / `sonnet` / `haiku`) no nome. A UI marca isso como `estimated: true`. Se o nome do modelo não contém nenhum desses substrings, o custo é reportado como null.
 
-## First scan can be slow
+## O primeiro scan pode ser lento
 
-The first `python3 cli.py scan` on a heavy user's machine can read tens of MB across hundreds of JSONLs. Subsequent scans are incremental (mtime + byte-offset tracking in the `files` table), so they're fast.
+O primeiro `python3 cli.py scan` na máquina de um usuário pesado pode ler dezenas de MB através de centenas de JSONLs. Scans subsequentes são incrementais (rastreamento de mtime + offset em bytes na tabela `files`), então são rápidos.
 
-## Running two dashboards against the same DB
+## Rodar dois dashboards contra o mesmo DB
 
-Both will fight over the SQLite file and you'll see inconsistent numbers and occasional `database is locked` errors. Only run one at a time. If you want to view the dashboard from a second device, use `HOST=0.0.0.0` on the one running machine and point the second device's browser at it.
+Os dois vão brigar pelo arquivo SQLite e você vai ver números inconsistentes e erros ocasionais de `database is locked`. Rode só um por vez. Se quiser ver o dashboard de um segundo dispositivo, use `HOST=0.0.0.0` na única máquina que está rodando e aponte o navegador do segundo dispositivo pra ela.

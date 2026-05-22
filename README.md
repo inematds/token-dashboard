@@ -1,30 +1,30 @@
 # Token Dashboard
 
-A local dashboard that reads the JSONL transcripts Claude Code writes to `~/.claude/projects/` and turns them into per-prompt cost analytics, tool/file heatmaps, subagent attribution, cache analytics, project comparisons, and a rule-based tips engine.
+Um dashboard local que lê as transcrições JSONL que o Claude Code grava em `~/.claude/projects/` e as transforma em análise de custo por prompt, mapas de calor de ferramentas/arquivos, atribuição de subagentes, análise de cache, comparação entre projetos e um motor de dicas baseado em regras.
 
-**Everything runs locally.** No data leaves your machine — no telemetry, no API calls for your data, no login.
+**Tudo roda localmente.** Nenhum dado sai da sua máquina — sem telemetria, sem chamadas de API com seus dados, sem login.
 
-![Overview tab — totals and daily charts](docs/images/dashboard-overview-top.jpg)
+![Aba Overview — totais e gráficos diários](docs/images/dashboard-overview-top.jpg)
 
-![Overview tab — per-project, per-model, top tools, recent sessions](docs/images/dashboard-overview-bottom.jpg)
+![Aba Overview — por projeto, por modelo, top de ferramentas, sessões recentes](docs/images/dashboard-overview-bottom.jpg)
 
-## What this is useful for
+## Para que isto serve
 
-- Seeing which of your prompts are expensive (surprise: they usually involve large tool results).
-- Comparing token usage across projects you've worked on.
-- Spotting wasteful patterns — the same file read twenty times in a session, a tool call returning 80k tokens.
-- Understanding what a "cache hit" actually saves you.
-- If you're on Pro or Max, confirming you're getting your money's worth in API-equivalent dollars.
+- Ver quais dos seus prompts são caros (surpresa: geralmente envolvem resultados grandes de ferramentas).
+- Comparar uso de tokens entre projetos em que você trabalhou.
+- Identificar padrões desperdiçadores — o mesmo arquivo lido vinte vezes em uma sessão, uma chamada de ferramenta retornando 80k tokens.
+- Entender o que um "cache hit" realmente economiza.
+- Se você está no Pro ou Max, confirmar que está tendo retorno do dinheiro em dólares equivalentes à API.
 
-## Prerequisites
+## Pré-requisitos
 
-- **Python 3.8 or newer** — already installed on macOS and most Linux. On Windows: `winget install Python.Python.3.12` or download from python.org.
-- **Claude Code** — installed and with at least one session run. The dashboard reads those sessions. If you just installed Claude Code and haven't used it yet, run at least one prompt first.
-- **A web browser.** Any modern one.
+- **Python 3.8 ou mais novo** — já instalado no macOS e na maioria do Linux. No Windows: `winget install Python.Python.3.12` ou baixe de python.org.
+- **Claude Code** — instalado e com pelo menos uma sessão executada. O dashboard lê essas sessões. Se você acabou de instalar o Claude Code e ainda não o usou, rode pelo menos um prompt primeiro.
+- **Um navegador web.** Qualquer um moderno.
 
-No `pip install`. No Node.js. No build step.
+Sem `pip install`. Sem Node.js. Sem etapa de build.
 
-## Quickstart
+## Início rápido
 
 ```bash
 git clone https://github.com/nateherkai/token-dashboard.git
@@ -32,108 +32,108 @@ cd token-dashboard
 python3 cli.py dashboard
 ```
 
-> On Windows, if `python3` isn't on your PATH, substitute `py -3` for `python3` in every command below.
+> No Windows, se `python3` não estiver no PATH, substitua `py -3` por `python3` em todos os comandos abaixo.
 
-The command:
-1. Scans `~/.claude/projects/` (first run can take 20–60 seconds on a heavy user's machine).
-2. Starts a local server at http://127.0.0.1:8080.
-3. Opens your default browser to that URL.
+O comando:
+1. Varre `~/.claude/projects/` (a primeira execução pode levar 20–60 segundos na máquina de um usuário pesado).
+2. Inicia um servidor local em http://127.0.0.1:8080.
+3. Abre seu navegador padrão nessa URL.
 
-Leave it running; it re-scans every 30 seconds and pushes updates live. Stop with `Ctrl+C`.
+Deixe rodando; ele re-varre a cada 30 segundos e envia atualizações ao vivo. Pare com `Ctrl+C`.
 
-## Where the data comes from
+## De onde vêm os dados
 
-Claude Code writes one JSONL file per session here:
+O Claude Code grava um arquivo JSONL por sessão aqui:
 
-| OS | Path |
+| SO | Caminho |
 |---|---|
 | macOS / Linux | `~/.claude/projects/<project-slug>/<session-id>.jsonl` |
 | Windows | `C:\Users\<you>\.claude\projects\<project-slug>\<session-id>.jsonl` |
 
-The dashboard never modifies those files — it only reads them and keeps a local SQLite cache at `~/.claude/token-dashboard.db`.
+O dashboard nunca modifica esses arquivos — apenas os lê e mantém um cache SQLite local em `~/.claude/token-dashboard.db`.
 
-To point at a different location:
+Para apontar para outro local:
 
 ```bash
 python3 cli.py dashboard --projects-dir /path/to/projects --db /path/to/cache.db
 ```
 
-### Environment variables
+### Variáveis de ambiente
 
-| Var | Default | Purpose |
+| Var | Padrão | Propósito |
 |---|---|---|
-| `PORT` | `8080` | Port the local web server listens on |
-| `HOST` | `127.0.0.1` | Bind address. Keep the default. Setting `0.0.0.0` exposes your entire prompt history to anyone on your local network — don't do this on any network you don't fully control (no coffee-shop Wi-Fi, no coworking spaces). |
-| `CLAUDE_PROJECTS_DIR` | `~/.claude/projects` | Where to scan for session JSONL files |
-| `TOKEN_DASHBOARD_DB` | `~/.claude/token-dashboard.db` | SQLite cache location |
+| `PORT` | `8080` | Porta em que o servidor web local escuta |
+| `HOST` | `127.0.0.1` | Endereço de bind. Mantenha o padrão. Definir `0.0.0.0` expõe todo o seu histórico de prompts a qualquer um na sua rede local — não faça isso em nenhuma rede que você não controle totalmente (nada de Wi-Fi de cafeteria, nada de coworking). |
+| `CLAUDE_PROJECTS_DIR` | `~/.claude/projects` | Onde varrer os arquivos JSONL de sessão |
+| `TOKEN_DASHBOARD_DB` | `~/.claude/token-dashboard.db` | Local do cache SQLite |
 
-Pricing lives in [`pricing.json`](pricing.json). Edit it directly if model prices change or to add a new plan.
+Os preços ficam em [`pricing.json`](pricing.json). Edite-o diretamente se os preços dos modelos mudarem ou para adicionar um novo plano.
 
-## CLI reference
+## Referência da CLI
 
 ```bash
-python3 cli.py scan          # populate / refresh the local DB, then exit
-python3 cli.py today         # today's totals (terminal)
-python3 cli.py stats         # all-time totals (terminal)
-python3 cli.py tips          # active suggestions (terminal)
-python3 cli.py dashboard     # scan + serve the UI at http://localhost:8080
+python3 cli.py scan          # popula / atualiza o DB local e sai
+python3 cli.py today         # totais de hoje (terminal)
+python3 cli.py stats         # totais de todo o período (terminal)
+python3 cli.py tips          # sugestões ativas (terminal)
+python3 cli.py dashboard     # scan + serve a UI em http://localhost:8080
 
-# dashboard flags
-python3 cli.py dashboard --no-open   # don't auto-open the browser
-python3 cli.py dashboard --no-scan   # skip the initial scan (use cached DB only)
+# flags do dashboard
+python3 cli.py dashboard --no-open   # não abre o navegador automaticamente
+python3 cli.py dashboard --no-scan   # pula o scan inicial (usa só o DB em cache)
 ```
 
-Change the port: `PORT=9000 python3 cli.py dashboard`.
+Trocar a porta: `PORT=9000 python3 cli.py dashboard`.
 
-## The 7 tabs
+## As 7 abas
 
-The dashboard is a single page with a hash-router tab bar across the top. Each tab is backed by its own JSON API under `/api/`:
+O dashboard é uma página única com uma barra de abas no topo usando hash-router. Cada aba é alimentada por sua própria API JSON em `/api/`:
 
-- **Overview** — all-time input/output/cache tokens, sessions, turns, estimated cost on your chosen plan, daily work and cache-read charts, tokens-by-project, token share by model, top tools by call count, and recent sessions. This is the landing tab.
-- **Prompts** — your most expensive user prompts ranked by tokens. Click any row to see the assistant response, tool calls made, and the size of each tool result.
-- **Sessions** — turn-by-turn view of any single session, with per-turn tokens and tool calls.
-- **Projects** — per-project comparison: tokens, session counts, and which files were touched most.
-- **Skills** — which skills you invoke most often, and (where we can measure them) their token cost. See [limitations](docs/KNOWN_LIMITATIONS.md#skills-token-counts-are-partial).
-- **Tips** — rule-based suggestions for reducing token usage (repeated file reads, oversized tool results, low cache-hit rate, etc.).
-- **Settings** — switch pricing between API / Pro / Max / Max-20x so cost figures everywhere else reflect your actual plan.
+- **Overview** — tokens de input/output/cache de todo o período, sessões, turnos, custo estimado no plano escolhido, gráficos diários de trabalho e leitura de cache, tokens por projeto, participação de tokens por modelo, top de ferramentas por contagem de chamadas e sessões recentes. Esta é a aba inicial.
+- **Prompts** — seus prompts de usuário mais caros, ranqueados por tokens. Clique em qualquer linha para ver a resposta do assistente, as chamadas de ferramenta feitas e o tamanho de cada resultado de ferramenta.
+- **Sessions** — visão turno a turno de qualquer sessão, com tokens e chamadas de ferramenta por turno.
+- **Projects** — comparação por projeto: tokens, contagem de sessões e quais arquivos foram mais tocados.
+- **Skills** — quais skills você invoca com mais frequência e (onde dá pra medir) seu custo em tokens. Veja [limitações](docs/KNOWN_LIMITATIONS.md#skills-token-counts-are-partial).
+- **Tips** — sugestões baseadas em regras para reduzir uso de tokens (leituras repetidas de arquivos, resultados de ferramentas grandes demais, taxa baixa de cache hit, etc.).
+- **Settings** — alterna o pricing entre API / Pro / Max / Max-20x para que os valores de custo em todo o resto reflitam seu plano real.
 
-The Overview tab also has a built-in "What do these numbers mean?" panel that explains input/output/cache tokens in plain English.
+A aba Overview também tem um painel embutido "What do these numbers mean?" que explica tokens de input/output/cache em linguagem simples.
 
-## Troubleshooting
+## Solução de problemas
 
-**"No data" or empty charts.** Run `python3 cli.py scan` once to populate the DB, then reload.
+**"Sem dados" ou gráficos vazios.** Rode `python3 cli.py scan` uma vez para popular o DB e recarregue.
 
-**Port 8080 already in use.** `PORT=9000 python3 cli.py dashboard`.
+**Porta 8080 já em uso.** `PORT=9000 python3 cli.py dashboard`.
 
-**Numbers look wrong / stuck.** The DB lives at `~/.claude/token-dashboard.db`. Delete it and re-run `python3 cli.py scan` to rebuild from scratch.
+**Números parecem errados / travados.** O DB fica em `~/.claude/token-dashboard.db`. Apague e rode `python3 cli.py scan` para reconstruir do zero.
 
-**Running the dashboard twice at the same time.** Don't — both processes will fight over the SQLite DB. Stop all instances before starting a new one.
+**Rodar o dashboard duas vezes ao mesmo tempo.** Não faça — os dois processos vão brigar pelo DB SQLite. Pare todas as instâncias antes de iniciar uma nova.
 
-## Accuracy note
+## Nota sobre precisão
 
-Claude Code writes each assistant response 2–3 times to disk while it streams (the same API message gets snapshotted as output grows). The dashboard dedupes these by `message.id` so the final tally matches what the API actually billed. If you compare against another tool that sums every JSONL row, expect this dashboard's numbers to be lower — and closer to reality.
+O Claude Code grava cada resposta do assistente 2–3 vezes em disco enquanto ela faz streaming (a mesma mensagem da API é snapshotada conforme o output cresce). O dashboard deduplica isso por `message.id` para que o total final bata com o que a API realmente cobrou. Se você comparar com outra ferramenta que soma cada linha do JSONL, espere que os números deste dashboard sejam menores — e mais próximos da realidade.
 
-## Privacy
+## Privacidade
 
-Nothing leaves your machine. No telemetry. No remote calls for your data. The browser fetches its JSON from `127.0.0.1`, and all JS/CSS/fonts are served from that same local server — ECharts is vendored into `web/`, and the UI falls back to system fonts rather than pulling from a font CDN. If you want to verify: `grep -r "https://" token_dashboard/ web/` — you'll find nothing.
+Nada sai da sua máquina. Sem telemetria. Sem chamadas remotas com seus dados. O navegador busca seu JSON de `127.0.0.1`, e todo JS/CSS/fonte é servido por esse mesmo servidor local — o ECharts está vendorizado em `web/`, e a UI usa fontes do sistema como fallback em vez de buscar de uma CDN de fontes. Se quiser verificar: `grep -r "https://" token_dashboard/ web/` — não vai encontrar nada.
 
-## Tech stack
+## Stack técnica
 
-Python 3 (stdlib only) for the CLI, scanner, and HTTP server. SQLite for the local cache. Vanilla JS + ECharts for the UI, no build step. Dark theme, hash-based router, server-sent events for live refresh.
+Python 3 (só stdlib) para a CLI, scanner e servidor HTTP. SQLite para o cache local. Vanilla JS + ECharts para a UI, sem etapa de build. Tema escuro, router baseado em hash, server-sent events para refresh ao vivo.
 
-Data flow: `cli.py` → `token_dashboard/scanner.py` → SQLite DB; `token_dashboard/server.py` exposes `/api/*` JSON routes and serves `web/`.
+Fluxo de dados: `cli.py` → `token_dashboard/scanner.py` → DB SQLite; `token_dashboard/server.py` expõe rotas JSON `/api/*` e serve `web/`.
 
-## Further reading
+## Leitura adicional
 
-- [`CLAUDE.md`](CLAUDE.md) — conventions and architecture overview (also picked up automatically by Claude Code)
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — how to develop and test
-- [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md) — rough edges
-- [`docs/inspiration.md`](docs/inspiration.md) — prior art and how this project diverges
+- [`CLAUDE.md`](CLAUDE.md) — convenções e visão geral da arquitetura (também é lido automaticamente pelo Claude Code)
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — como desenvolver e testar
+- [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md) — pontas soltas
+- [`docs/inspiration.md`](docs/inspiration.md) — trabalho anterior e como este projeto diverge
 
-## Contributing
+## Contribuindo
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md). Short version: fork, `python3 -m unittest discover tests` before opening a PR, keep it stdlib-only.
+Veja [`CONTRIBUTING.md`](CONTRIBUTING.md). Versão curta: faça fork, rode `python3 -m unittest discover tests` antes de abrir um PR, mantenha só stdlib.
 
-## License
+## Licença
 
 [MIT](LICENSE).

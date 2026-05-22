@@ -1,47 +1,47 @@
 # CLAUDE.md
 
-Guidance for Claude Code when working in this repository.
+Orientações para o Claude Code ao trabalhar neste repositório.
 
-## Project overview
+## Visão geral do projeto
 
-**Token Dashboard** — a local dashboard for tracking Claude Code token usage, costs, and session history. Reads the JSONL transcripts Claude Code writes to `~/.claude/projects/` and turns them into per-prompt cost analytics, tool/file heatmaps, subagent attribution, cache analytics, project comparisons, and a rule-based tips engine.
+**Token Dashboard** — um dashboard local para acompanhar uso de tokens, custos e histórico de sessões do Claude Code. Lê as transcrições JSONL que o Claude Code grava em `~/.claude/projects/` e as transforma em análise de custo por prompt, mapas de calor de ferramentas/arquivos, atribuição de subagentes, análise de cache, comparação entre projetos e um motor de dicas baseado em regras.
 
-Inspired by [phuryn/claude-usage](https://github.com/phuryn/claude-usage) but diverges in UI (vanilla JS + ECharts, dark theme, hash router, SSE refresh) and scope (expensive-prompt drill-down, skills view, tips engine, streaming-snapshot dedup). See `docs/inspiration.md` for the original's feature set and known limitations.
+Inspirado em [phuryn/claude-usage](https://github.com/phuryn/claude-usage) mas diverge na UI (vanilla JS + ECharts, tema escuro, hash router, refresh via SSE) e no escopo (drill-down de prompts caros, visão de skills, motor de dicas, dedup de snapshots de streaming). Veja `docs/inspiration.md` para o conjunto de features do original e suas limitações conhecidas.
 
 ## Status
 
-Working codebase. 68 Python unit tests (`python3 -m unittest discover tests`). Seven UI tabs wired up (Overview, Prompts, Sessions, Projects, Skills, Tips, Settings). Runs on macOS, Windows, and Linux.
+Codebase funcional. 68 testes unitários em Python (`python3 -m unittest discover tests`). Sete abas de UI plugadas (Overview, Prompts, Sessions, Projects, Skills, Tips, Settings). Roda em macOS, Windows e Linux.
 
-## Architecture
+## Arquitetura
 
 - `cli.py` → `token_dashboard/scanner.py` → `~/.claude/token-dashboard.db` (SQLite)
-- `token_dashboard/server.py` exposes JSON APIs (`/api/*`) + SSE stream (`/api/stream`) + static frontend (`web/`)
-- `web/` is vanilla JS, no build step — hash router + ECharts
+- `token_dashboard/server.py` expõe APIs JSON (`/api/*`) + stream SSE (`/api/stream`) + frontend estático (`web/`)
+- `web/` é vanilla JS, sem etapa de build — hash router + ECharts
 
-## Data source
+## Fonte de dados
 
-Claude Code writes one JSONL file per session to `~/.claude/projects/<project-slug>/<session-id>.jsonl`. Each line is a message record; usage fields live at `message.usage` and model identifier at `message.model`. The scanner is incremental — it tracks each file's mtime and byte offset in the `files` table and only reads new bytes on subsequent scans.
+O Claude Code grava um arquivo JSONL por sessão em `~/.claude/projects/<project-slug>/<session-id>.jsonl`. Cada linha é um registro de mensagem; os campos de uso ficam em `message.usage` e o identificador do modelo em `message.model`. O scanner é incremental — rastreia o mtime e o offset em bytes de cada arquivo na tabela `files` e só lê os bytes novos em scans subsequentes.
 
-## Conventions
+## Convenções
 
-- **Fully local.** No telemetry, no remote calls for user data. Tests run offline.
-- **Stdlib only.** No `pip install`. If a new feature needs a third-party library, argue for it first — we're willing to pay ergonomics cost to keep install friction at zero.
-- **SQLite parameter binding always.** Any f-string in a SQL statement must interpolate only internal, caller-controlled values (column names, placeholder lists). User-reachable values go through `?`.
-- **Small files with clear responsibilities.** If a file grows past ~400 lines or accretes three distinct concerns, split it.
-- **Streaming-snapshot dedup.** When adding scanner logic that joins the `messages` table, remember `(session_id, message_id)` is the dedup key, not `uuid`. See `scanner._evict_prior_snapshots` and the migration note in `db._migrate_add_message_id`.
+- **Totalmente local.** Sem telemetria, sem chamadas remotas com dados do usuário. Os testes rodam offline.
+- **Só stdlib.** Sem `pip install`. Se uma nova feature precisar de biblioteca de terceiros, argumente antes — estamos dispostos a pagar custo de ergonomia para manter o atrito de instalação em zero.
+- **Sempre usar parameter binding do SQLite.** Qualquer f-string em uma instrução SQL deve interpolar apenas valores internos controlados pelo caller (nomes de coluna, listas de placeholders). Valores que vêm do usuário passam por `?`.
+- **Arquivos pequenos com responsabilidades claras.** Se um arquivo passar de ~400 linhas ou acumular três responsabilidades distintas, divida.
+- **Dedup de snapshots de streaming.** Ao adicionar lógica no scanner que faça join com a tabela `messages`, lembre que `(session_id, message_id)` é a chave de dedup, não `uuid`. Veja `scanner._evict_prior_snapshots` e a nota de migração em `db._migrate_add_message_id`.
 
-## Customizing
+## Customizando
 
-Env vars: `PORT` (default 8080), `HOST` (default 127.0.0.1), `CLAUDE_PROJECTS_DIR`, `TOKEN_DASHBOARD_DB`. Pricing lives in `pricing.json`. See README.md § Environment variables for details.
+Variáveis de ambiente: `PORT` (padrão 8080), `HOST` (padrão 127.0.0.1), `CLAUDE_PROJECTS_DIR`, `TOKEN_DASHBOARD_DB`. Os preços ficam em `pricing.json`. Veja README.md § Environment variables para detalhes.
 
-## Known limitations
+## Limitações conhecidas
 
-See `docs/KNOWN_LIMITATIONS.md`. Current summary: Skills `tokens_per_call` is populated only for skills installed under the three scanned roots (`~/.claude/skills/`, `~/.claude/scheduled-tasks/`, `~/.claude/plugins/`); project-local skills and subagent-dispatched skills show invocation counts but blank token counts.
+Veja `docs/KNOWN_LIMITATIONS.md`. Resumo atual: `tokens_per_call` de Skills é populado apenas para skills instaladas sob os três roots varridos (`~/.claude/skills/`, `~/.claude/scheduled-tasks/`, `~/.claude/plugins/`); skills locais do projeto e skills despachadas por subagente mostram contagem de invocações mas contagens de tokens em branco.
 
-## Verifying changes
+## Verificando alterações
 
 ```bash
-python3 -m unittest discover tests        # all tests
-python3 cli.py dashboard --no-open        # start the server
-curl http://127.0.0.1:8080/api/overview   # sanity-check an endpoint
+python3 -m unittest discover tests        # todos os testes
+python3 cli.py dashboard --no-open        # inicia o servidor
+curl http://127.0.0.1:8080/api/overview   # sanity-check de um endpoint
 ```

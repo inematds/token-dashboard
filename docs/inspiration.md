@@ -1,58 +1,58 @@
-# Inspiration: phuryn/claude-usage
+# Inspiração: phuryn/claude-usage
 
-Source: https://github.com/phuryn/claude-usage
+Fonte: https://github.com/phuryn/claude-usage
 
-## What it does
+## O que faz
 
-A local dashboard that reads Claude Code's JSONL session transcripts and shows token usage, cost estimates, and session history. Works on API, Pro, and Max plans.
+Um dashboard local que lê as transcrições JSONL de sessão do Claude Code e mostra uso de tokens, estimativas de custo e histórico de sessões. Funciona nos planos API, Pro e Max.
 
-## Tech stack
+## Stack técnica
 
-- **Python 3.8+**, standard library only (no pip install, no venv)
-- `sqlite3` — persistent storage at `~/.claude/usage.db`
-- `http.server` — serves a single-page HTML/JS dashboard
-- Chart.js on the frontend for visualizations
+- **Python 3.8+**, somente biblioteca padrão (sem pip install, sem venv)
+- `sqlite3` — armazenamento persistente em `~/.claude/usage.db`
+- `http.server` — serve um dashboard HTML/JS de página única
+- Chart.js no frontend para as visualizações
 
-## Core files
+## Arquivos centrais
 
-- `scanner.py` — parses JSONL into SQLite, incremental (tracks file mtime)
-- `dashboard.py` — HTTP server, single-page UI
-- `cli.py` — command dispatcher
+- `scanner.py` — faz parsing do JSONL para o SQLite, incremental (rastreia mtime do arquivo)
+- `dashboard.py` — servidor HTTP, UI de página única
+- `cli.py` — despachante de comandos
 
-## CLI commands
+## Comandos da CLI
 
-- `python cli.py scan` — populate the DB from JSONL files
-- `python cli.py today` — today's breakdown by model (terminal)
-- `python cli.py stats` — all-time stats (terminal)
-- `python cli.py dashboard` — scan + open browser at `localhost:8080`
-- Env vars: `HOST`, `PORT`, `--projects-dir` for custom paths
+- `python cli.py scan` — popula o DB a partir dos arquivos JSONL
+- `python cli.py today` — breakdown de hoje por modelo (terminal)
+- `python cli.py stats` — estatísticas de todo o período (terminal)
+- `python cli.py dashboard` — scan + abre o navegador em `localhost:8080`
+- Variáveis de ambiente: `HOST`, `PORT`, `--projects-dir` para caminhos customizados
 
-## What it captures
+## O que captura
 
-- Claude Code CLI (`claude` in terminal)
-- VS Code extension (Claude Code sidebar)
-- Dispatched Code sessions
+- Claude Code CLI (`claude` no terminal)
+- Extensão do VS Code (sidebar do Claude Code)
+- Sessões Code despachadas
 
-## What it does NOT capture
+## O que NÃO captura
 
-- **Cowork sessions** — server-side, no local JSONL
-- Cost calculations for non-standard model names (only matches `opus`/`sonnet`/`haiku` — others show `n/a`)
+- **Sessões Cowork** — server-side, sem JSONL local
+- Cálculo de custo para nomes de modelo não-padrão (só dá match em `opus`/`sonnet`/`haiku` — outros mostram `n/a`)
 
-## Data shape
+## Formato dos dados
 
-Each JSONL line is a message. Usage lives at `message.usage`:
-- input tokens, output tokens
-- cache creation tokens, cache read tokens
+Cada linha do JSONL é uma mensagem. O uso fica em `message.usage`:
+- tokens de input, tokens de output
+- tokens de criação de cache, tokens de leitura de cache
 
-Model identifier at `message.model`.
+Identificador do modelo em `message.model`.
 
-## Limitations worth addressing in our version
+## Limitações que vale endereçar na nossa versão
 
-1. **Cost for Pro/Max users is misleading** — API rates shown, but those users pay a flat subscription. The original admits this in its README.
-2. **Unknown models show `n/a`** — no fallback pricing, no way to add custom pricing.
-3. **UI is a single HTML page with Chart.js** — functional but dated.
-4. **No session drill-down** — can't easily click into a session and see what happened.
-5. **No per-project comparison** — aggregates are global.
-6. **30-second auto-refresh** only; no live tailing of the active session.
+1. **Custo para usuários Pro/Max é enganoso** — mostra taxas de API, mas esses usuários pagam uma assinatura fixa. O original admite isso no README.
+2. **Modelos desconhecidos mostram `n/a`** — sem pricing de fallback, sem jeito de adicionar pricing customizado.
+3. **UI é uma página HTML única com Chart.js** — funcional, mas datada.
+4. **Sem drill-down de sessão** — não dá pra clicar facilmente em uma sessão e ver o que aconteceu.
+5. **Sem comparação por projeto** — os agregados são globais.
+6. **Auto-refresh de 30 segundos** apenas; sem tailing ao vivo da sessão ativa.
 
-These are candidates (not commitments) for what our version could do better.
+Esses são candidatos (não compromissos) para o que nossa versão poderia fazer melhor.

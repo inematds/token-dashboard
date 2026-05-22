@@ -1,56 +1,56 @@
-# Contributing
+# Contribuindo
 
-Thanks for considering a contribution! This is a small, stdlib-only Python project — easy to run, easy to change.
+Obrigado por considerar contribuir! Este é um projeto Python pequeno, só com stdlib — fácil de rodar, fácil de mudar.
 
-## Running the tests
+## Rodando os testes
 
 ```bash
 python3 -m unittest discover tests
 ```
 
-That's it. No `pip install`, no fixtures to download. All tests run in under 5 seconds.
+É isso. Sem `pip install`, sem fixtures para baixar. Todos os testes rodam em menos de 5 segundos.
 
-If you're fixing a bug, add a failing test first. If you're adding a feature, add a test that exercises the happy path.
+Se você está corrigindo um bug, adicione primeiro um teste que falha. Se está adicionando uma feature, adicione um teste que exercite o caminho feliz.
 
-## Running the dashboard locally
+## Rodando o dashboard localmente
 
 ```bash
 python3 cli.py dashboard --no-open
 ```
 
-Open http://127.0.0.1:8080 in your browser. The server re-scans every 30 seconds and pushes updates over Server-Sent Events, so you'll see changes without a hard refresh.
+Abra http://127.0.0.1:8080 no navegador. O servidor re-varre a cada 30 segundos e envia atualizações via Server-Sent Events, então você verá mudanças sem precisar de refresh forçado.
 
-## Code style
+## Estilo de código
 
-- **Stdlib only.** No `pip install`. If you think a feature genuinely needs a third-party dependency, open an issue first to discuss — we weigh "is this worth the install friction" heavily.
-- **SQL: parameter binding always.** Any f-string in a SQL statement interpolates only internal values (hardcoded column names, placeholder lists built from internal UUIDs). User-reachable values go through `?`.
-- **Small focused files.** If a file is creeping past ~400 lines and accreting distinct concerns, split it.
-- **Type hints where they aid readability.** Not a hard requirement, but helpful on function signatures.
-- **Docstrings explain *why*, not *what*.** The code already shows what.
+- **Só stdlib.** Sem `pip install`. Se você acha que uma feature realmente precisa de dependência de terceiros, abra uma issue antes para discutir — pesamos muito o "vale a pena o atrito de instalação".
+- **SQL: sempre parameter binding.** Qualquer f-string em uma instrução SQL interpola apenas valores internos (nomes de coluna hardcoded, listas de placeholders montadas a partir de UUIDs internos). Valores que vêm do usuário passam por `?`.
+- **Arquivos pequenos e focados.** Se um arquivo está passando de ~400 linhas e acumulando responsabilidades distintas, divida.
+- **Type hints onde ajudarem na legibilidade.** Não é requisito rígido, mas ajuda em assinaturas de função.
+- **Docstrings explicam *por quê*, não *o quê*.** O código já mostra o quê.
 
-Component layout: `cli.py` (entry points) → `token_dashboard/scanner.py` (JSONL → SQLite) → `token_dashboard/db.py` (query helpers) → `token_dashboard/server.py` (HTTP + SSE + `/api/*` routes) → `web/` (vanilla JS UI). See [`CLAUDE.md`](CLAUDE.md) for the short architecture overview. To add a new API route: add a handler branch in `token_dashboard/server.py`, put the SQL in a helper in `token_dashboard/db.py`, and add a test under `tests/`.
+Layout dos componentes: `cli.py` (pontos de entrada) → `token_dashboard/scanner.py` (JSONL → SQLite) → `token_dashboard/db.py` (helpers de query) → `token_dashboard/server.py` (HTTP + SSE + rotas `/api/*`) → `web/` (UI em vanilla JS). Veja [`CLAUDE.md`](CLAUDE.md) para a visão curta de arquitetura. Para adicionar uma rota nova de API: adicione um branch de handler em `token_dashboard/server.py`, ponha o SQL num helper em `token_dashboard/db.py` e adicione um teste em `tests/`.
 
-## Opening a pull request
+## Abrindo um pull request
 
-1. Fork the repo.
-2. Create a branch: `git checkout -b feat/<short-description>` or `fix/<short-description>`.
-3. Make the change. Add or update tests.
-4. Run `python3 -m unittest discover tests` — must be green.
-5. Commit with a conventional-commit-style message: `feat: add X`, `fix: handle Y`, `docs: update Z`.
-6. Push and open a PR against `main`. Describe the user-visible change and link to any relevant issue.
+1. Faça fork do repositório.
+2. Crie uma branch: `git checkout -b feat/<short-description>` ou `fix/<short-description>`.
+3. Faça a mudança. Adicione ou atualize testes.
+4. Rode `python3 -m unittest discover tests` — tem que passar verde.
+5. Faça commit com mensagem no estilo conventional commits: `feat: add X`, `fix: handle Y`, `docs: update Z`.
+6. Faça push e abra um PR contra `main`. Descreva a mudança visível para o usuário e linke qualquer issue relevante.
 
-## Ideas that would genuinely help
+## Ideias que ajudariam de verdade
 
-- Broadening the Skills catalog scan to cover project-local `.claude/skills/` directories (closes the known limitation).
-- A CSV or JSON export of any route.
-- A session-filter UI (currently everything is all-time or implicit-"recent").
-- A GitHub Actions workflow that runs the tests on push.
+- Ampliar o scan de catálogo de Skills para cobrir diretórios `.claude/skills/` locais ao projeto (fecha a limitação conhecida).
+- Export em CSV ou JSON de qualquer rota.
+- UI de filtro por sessão (hoje tudo é all-time ou implicitamente "recente").
+- Um workflow do GitHub Actions que rode os testes a cada push.
 
-## What we're not looking for
+## O que não estamos buscando
 
-- Adding a frontend framework. Vanilla JS is a feature.
-- Adding telemetry, analytics, or any outbound HTTP for user data. This dashboard is local-only and will stay that way.
+- Adicionar um framework de frontend. Vanilla JS é uma feature.
+- Adicionar telemetria, analytics ou qualquer HTTP de saída com dados do usuário. Este dashboard é local-only e vai continuar assim.
 
-## License
+## Licença
 
-By contributing, you agree your contribution is licensed under the [MIT License](LICENSE).
+Ao contribuir, você concorda que sua contribuição é licenciada sob a [Licença MIT](LICENSE).
